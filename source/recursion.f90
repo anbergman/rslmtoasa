@@ -1108,7 +1108,10 @@ contains
       ! Local variables
       integer :: i, j, l, ll, kk, m
       integer :: llmax ! Recursion steps
+      integer :: nhall, nee
 
+      nee = (maxval(this%charge%lattice%nn(:, 1)) + 1)
+      nhall = (maxval(this%charge%lattice%nn(:, 1)) + 1)
       ! Determine how many atoms each process should handle
       call get_mpi_variables(rank, this%lattice%nrec)
 
@@ -1137,9 +1140,13 @@ contains
          this%izero(j) = 1
 
          ! Create and initialize the GPU Recursion structure and copy your arrays.
-         call init_recursion(this%lattice%kk, this%lattice%nmax, this%control%lld, &
-            this%psi_b, this%hamiltonian%hall, this%hamiltonian%ee, this%hamiltonian%lsham, this%izero)
+         # call init_recursion(this%lattice%kk, this%lattice%nmax, this%control%lld, &
+         #    this%psi_b, this%hamiltonian%hall, this%hamiltonian%ee, this%hamiltonian%lsham, this%izero)
          
+         call init_recursion(this%lattice%kk, this%lattice%nmax, this%control%lld, &
+         nhall, nee, this%lattice%ntype, this%psi_b, this%hamiltonian%hall, this%hamiltonian%ee, this%hamiltonian%lsham, &
+         this%izero, this%iz)
+
 
          ! Instead of calling this%crecal_b(), call our new GPU routine:
          call run_recursion()

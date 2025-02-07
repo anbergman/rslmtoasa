@@ -35,6 +35,7 @@ add_library(${PROJECT_NAME} STATIC
     symbolic_atom.f90
     timer.f90
     xc.f90
+    recursion_manager_mod.f90
 )
 add_subdirectory(./include_codes/abspinlib)
 target_link_libraries(${PROJECT_NAME} abspinlib)

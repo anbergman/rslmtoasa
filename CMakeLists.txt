@@ -9,10 +9,13 @@
 # cmake_policy(SET CMP0054 NEW)
 
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 set(PROJECT_NAME rslmto)
-project(${PROJECT_NAME})
+project(${PROJECT_NAME} LANGUAGES Fortran  CXX CUDA)
+
+# Enable CUDA language
+enable_language(CUDA)
 
 # Find all the .in files
 # file(GLOB inFiles RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/*.in" "${PROJECT_SOURCE_DIR}/test/*.in")
@@ -58,6 +61,8 @@ set(CMAKE_VERBOSE_MAKEFILE off)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+
+find_package(CUDAToolkit REQUIRED)
 
 if (COLOR)
   set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DCOLOR")
@@ -171,6 +176,8 @@ elseif(ENABLE_MPI AND MPI_Fortran_FOUND)
 else()
     target_link_libraries(${PROJECT_BINARY} ${PROJECT_NAME} ${BLAS95_LIBRARIES} ${LAPACK_LIBRARIES} ${LAPACK95_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS})
 endif()
+target_link_libraries(${PROJECT_BINARY} ${PROJECT_NAME} recursion_plugin ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS})
+target_link_libraries(${PROJECT_BINARY} CUDA::cublas CUDA::cusolver)
 
 ##############################################################################################
 # Print current flags
@@ -272,3 +279,23 @@ if(WIN32)
    set(CPACK_WIX_VERSION "4")
    endif()
 include(CPack)
+
+# --- Build the recursion plugin as a shared library ---
+# We include both the CUDA implementation and the Fortran interface.
+add_library(recursion_plugin SHARED
+    ${CMAKE_SOURCE_DIR}/source/recursion_plugin.cu
+    ${CMAKE_SOURCE_DIR}/source/recursion_plugin.f90
+)
+
+# (Optional) Specify include directories for the plugin.
+target_include_directories(recursion_plugin PUBLIC ${CMAKE_SOURCE_DIR})
+
+# Link CUDA libraries needed by the plugin (e.g., cuBLAS and cuSOLVER)
+# find_package(CUBLAS REQUIRED)
+# find_package(CUSOLVER REQUIRED)
+# target_link_libraries(recursion_plugin PUBLIC ${CUBLAS_LIBRARIES} ${CUSOLVER_LIBRARIES})
+
+# --- Build the final executable ---
+set(PROJECT_BINARY ${PROJECT_NAME}.x)
+
+# Link the main executable with your Fortran library and the plugin.

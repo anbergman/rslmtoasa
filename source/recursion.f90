@@ -1103,6 +1103,7 @@ contains
    !---------------------------------------------------------------------------
    subroutine recur_b(this)
       use mpi_mod
+      use recursion_manager_mod
       class(recursion), intent(inout) :: this
       ! Local variables
       integer :: i, j, l, ll, kk, m
@@ -1135,7 +1136,18 @@ contains
 
          this%izero(j) = 1
 
-         call this%crecal_b()
+         ! Create and initialize the GPU Recursion structure and copy your arrays.
+         call init_recursion(this%lattice%kk, this%lattice%nmax, this%control%lld, &
+            this%psi_b, this%hamiltonian%hall, this%hamiltonian%ee, this%hamiltonian%lsham, this%izero)
+         
+
+         ! Instead of calling this%crecal_b(), call our new GPU routine:
+         call run_recursion()
+
+         ! Copy out the results from the device.
+         call finalize_recursion(this%psi_b, this%atemp_b, this%b2temp_b)
+         !call finalize_recursion(psi_b_result, atemp_b_result)
+         !call this%crecal_b()
 
          do ll = 1, llmax
             do l = 1, 18

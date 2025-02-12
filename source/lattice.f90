@@ -978,6 +978,8 @@ contains
       integer :: npe, ndim, nx, ny, nz, npr, l, n, i, nl, k, kk
       logical :: isopen
       integer :: iostatus
+      integer :: n1p, n2p, n3p, na_org, na_opt
+      real(rp) :: k_fac, q_fac
 
       inquire (unit=10, opened=isopen)
       if (isopen) then
@@ -987,6 +989,24 @@ contains
       end if
 
       n = this%ntot
+
+      ! If PBC, recalculate n1, n2, n3 so that the number of atoms are approx=ndim
+      if (this%pbc) then
+         na_org = this%n1 * this%n2 * this%n3 * n
+         q_fac = (this%n1* this%n2 * this%n3 * n) / (1.0_rp * this%n1**3)
+         na_opt = this%ndim
+         k_fac = (na_opt/q_fac)**(1.0_rp/3.0_rp)
+         n1p = ceiling(k_fac)
+         n2p = ceiling(k_fac * this%n2/this%n1)
+         n3p = ceiling(k_fac * this%n3/this%n1)
+         na_opt = n1p * n2p * n3p * n
+         this%n1 = n1p-1
+         this%n2 = n2p-1
+         this%n3 = n3p-1
+         this%ndim = na_opt
+         ndim = this%ndim
+      end if
+
       ! Defining a size-like parameter for the clust before the cut
       npe = this%npe
       ndim = this%ndim
@@ -1074,6 +1094,9 @@ contains
       call move_alloc(iz, this%iz)
       call move_alloc(num, this%num)
       close (10)
+
+      print *,'Bravais lattice created'
+      print *, 'End of bravais lattice initialization'  ! Added for clarity on completion
    end subroutine bravais
 
    !---------------------------------------------------------------------------

@@ -224,6 +224,13 @@ module self_mod
       ! potential parameters are calculated from moments
       logical :: cold
 
+      !> Logical variable to control random initialization
+      ! of magnetic moments
+      logical :: rand_mom
+
+      !> Random seed for magnetic moments
+      integer :: rand_seed
+
    contains
       procedure :: build_from_file
       procedure :: restore_to_default
@@ -313,6 +320,8 @@ contains
 
       ! variables associated with the reading processes
       integer :: iostatus, funit, i
+      integer, dimension(1) :: rseed
+      real(rp) :: mnorm
 
       include 'include_codes/namelists/self.f90'
 
@@ -331,6 +340,8 @@ contains
       fix_soc = this%fix_soc
       soc_scale = this%soc_scale
       cold = this%cold
+      rand_mom = this%rand_mom
+      rand_seed = this%rand_seed
 
       call move_alloc(this%ws, ws)
       call move_alloc(this%mixmag, mixmag)
@@ -439,6 +450,22 @@ contains
       this%orbital_polarization = orbital_polarization
       this%init = init
       this%cold = cold
+      this%rand_mom = rand_mom
+      this%rand_seed = rand_seed
+
+      if (this%rand_mom) then
+         rseed(1) = this%rand_seed
+         call random_seed(put=rseed)
+         do i = 1, this%lattice%ntype
+            call random_number(this%symbolic_atom(i)%potential%mom(:))
+            this%symbolic_atom(i)%potential%mom(:) = 2.0_rp*this%symbolic_atom(i)%potential%mom(:) - 1.0_rp
+            mnorm = sqrt(sum(this%symbolic_atom(i)%potential%mom(:)*this%symbolic_atom(i)%potential%mom(:)))
+            this%symbolic_atom(i)%potential%mom(:) = this%symbolic_atom(i)%potential%mom(:) / mnorm
+            print '(a,i4, 3f 12.6)','AB random', i, this%symbolic_atom(i)%potential%mom(:)
+         end do
+
+      end if
+
    end subroutine build_from_file
 
    !---------------------------------------------------------------------------
@@ -501,6 +528,9 @@ contains
 
       this%cold = .false.
 
+      this%rand_mom = .false.
+      this%rand_seed = 0
+
       if (associated(this%lattice)) then
          if (present(full)) then
             if (full) then
@@ -561,6 +591,9 @@ contains
       print *, 'orbital_polarization ', this%orbital_polarization
       print *, 'init                 ', this%init
       print *, 'cold                 ', this%cold
+      print *, 'rand_mom             ', this%rand_mom
+      print *, 'rand_seed            ', this%rand_seed
+
 
    end subroutine print_state_formatted
 
@@ -590,6 +623,8 @@ contains
       nstep = this%nstep
       init = this%init
       cold = this%cold
+      rand_mom = this%rand_mom
+      rand_seed = this%rand_seed
 
       ! 1d allocatable
 
@@ -642,6 +677,8 @@ contains
       nstep = this%nstep
       init = this%init
       cold = this%cold
+      rand_mom = this%rand_mom
+      rand_seed = this%rand_seed
       ! 1d allocatable
 
       if (allocated(this%ws)) then
@@ -1105,7 +1142,9 @@ contains
        close(ounit)
    
        ! Replace the original file with the temporary file
-       call rename(temp_filename, filename, status=stat)
+       !call rename(temp_filename, filename, status=stat)
+       stat = 0
+       call rename(temp_filename, filename)
        if (stat /= 0) then
            write(stderr, '(a)') "Error: Failed to update input file."
        end if

@@ -255,7 +255,8 @@ contains
 #else
       allocate (this%lsham(18, 18, this%charge%lattice%ntype))
       allocate (this%tmat(18, 18, 3, this%charge%lattice%ntype))
-      allocate (this%hhmag(9, 9, 4), this%hmag(9, 9, this%charge%lattice%kk, 4))
+      !allocate (this%hhmag(9, 9, 4), this%hmag(9, 9, this%charge%lattice%kk, 4))
+      allocate (this%hhmag(9, 9, 4), this%hmag(9, 9, (maxval(this%charge%lattice%nn(:, 1)) + 1), 4))
       allocate (this%ee(18, 18, (maxval(this%charge%lattice%nn(:, 1)) + 1), this%charge%lattice%ntype))
       allocate (this%hall(18, 18, (maxval(this%charge%lattice%nn(:, 1)) + 1), this%charge%lattice%nmax))
       !if (this%hoh) then

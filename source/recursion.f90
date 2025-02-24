@@ -2837,7 +2837,9 @@ contains
       allocate (this%irlist(0:this%lattice%kk))
 
       allocate (this%psi(18, this%lattice%kk), this%pmn(18, this%lattice%kk))
-      allocate (this%psi1(18, 18, this%lattice%kk), this%psi2(18, 18, this%lattice%kk), this%psi0(18, 18, this%lattice%kk))
+      if (this%control%recur == 'chebyshev') then
+         allocate (this%psi1(18, 18, this%lattice%kk), this%psi2(18, 18, this%lattice%kk), this%psi0(18, 18, this%lattice%kk))
+      end if
       allocate (this%v(18, this%lattice%kk))
       if (this%lattice%njij == 0) then
          allocate (this%a_b(18, 18, this%control%lld, this%lattice%nrec))
@@ -2852,18 +2854,18 @@ contains
       end if
       allocate (this%psi_b(18, 18, this%lattice%kk))
       allocate (this%hpsi(18, 18, this%lattice%kk))
-      allocate (this%hohpsi(18, 18, this%lattice%kk))
-      allocate (this%enupsi(18, 18, this%lattice%kk))
-      allocate (this%socpsi(18, 18, this%lattice%kk))
+      ! allocate (this%hohpsi(18, 18, this%lattice%kk))
+      ! allocate (this%enupsi(18, 18, this%lattice%kk))
+      ! allocate (this%socpsi(18, 18, this%lattice%kk))
       allocate (this%atemp_b(18, 18, this%control%lld))
       allocate (this%b2temp_b(18, 18, this%control%lld))
       allocate (this%pmn_b(18, 18, this%lattice%kk))
-      allocate (this%mu_nm_stochastic(2*(lmax + 1)**2, 2*(lmax + 1)**2, this%lattice%control%cond_ll, this%lattice%control%cond_ll,this%lattice%ntype))
+      ! allocate (this%mu_nm_stochastic(2*(lmax + 1)**2, 2*(lmax + 1)**2, this%lattice%control%cond_ll, this%lattice%control%cond_ll,this%lattice%ntype))
 #endif
       this%v(:, :) = 0.0d0
       this%psi(:, :) = 0.0d0
-      this%psi1(:, :, :) = 0.0d0
-      this%psi2(:, :, :) = 0.0d0
+      ! this%psi1(:, :, :) = 0.0d0
+      ! this%psi2(:, :, :) = 0.0d0
       this%pmn(:, :) = 0.0d0
       this%mu_n(:, :, :, :) = 0.0d0
       this%mu_ng(:, :, :, :) = 0.0d0
@@ -2879,14 +2881,14 @@ contains
       this%b2_b(:, :, :, :) = 0.0d0
       this%psi_b(:, :, :) = 0.0d0
       this%hpsi(:, :, :) = 0.0d0
-      this%hohpsi(:, :, :) = 0.0d0
-      this%enupsi(:, :, :) = 0.0d0
-      this%socpsi(:, :, :) = 0.0d0
+      !this%hohpsi(:, :, :) = 0.0d0
+      !this%enupsi(:, :, :) = 0.0d0
+      !this%socpsi(:, :, :) = 0.0d0
       this%atemp_b(:, :, :) = 0.0d0
       this%b2temp_b(:, :, :) = 0.0d0
       this%pmn_b(:, :, :) = 0.0d0
-      this%cheb_mom_temp(:, :) = 0.0d0
-      this%mu_nm_stochastic(:, :, :, :, :) = 0.0d0
+      !this%cheb_mom_temp(:, :) = 0.0d0
+      !this%mu_nm_stochastic(:, :, :, :, :) = 0.0d0
       if (present(full)) then
          if (full) then
             if (associated(this%hamiltonian)) call this%hamiltonian%restore_to_default()

@@ -1848,8 +1848,6 @@ contains
       do ii = 1, nm + 1
          this%nn(:, ii) = nn(:, ii)
       end do
-      write(*,*) this%nn(2,:)
-      write(*,*) maxval(this%nn(:,1)), minval(this%nn(:,1))
 #ifdef USE_SAFE_ALLOC
       call g_safe_alloc%allocate('lattice.sbar', this%sbar, (/9, 9, nm+1, this%kk/))
 #else

@@ -231,6 +231,7 @@ module self_mod
       !> Random seed for magnetic moments
       integer :: rand_seed
 
+
    contains
       procedure :: build_from_file
       procedure :: restore_to_default
@@ -461,7 +462,6 @@ contains
             this%symbolic_atom(i)%potential%mom(:) = 2.0_rp*this%symbolic_atom(i)%potential%mom(:) - 1.0_rp
             mnorm = sqrt(sum(this%symbolic_atom(i)%potential%mom(:)*this%symbolic_atom(i)%potential%mom(:)))
             this%symbolic_atom(i)%potential%mom(:) = this%symbolic_atom(i)%potential%mom(:) / mnorm
-            print '(a,i4, 3f 12.6)','AB random', i, this%symbolic_atom(i)%potential%mom(:)
          end do
 
       end if
@@ -722,8 +722,10 @@ contains
       !===========================================================================
       !                              BEGIN SCF LOOP
       !===========================================================================
-      niter = 0
-      do i = 1, this%nstep
+      niter = 1
+      !do i = 1, this%nstep
+      do while(niter <= this%nstep)
+         i = niter
          if (this%cold .and. i==1) call run_scf(this)
          !=========================================================================
          !                        PERFORM THE RECURSION
@@ -793,11 +795,13 @@ contains
          this%converged = this%is_converged(this%mix%delta)
          if (this%converged) then
             if (rank == 0) call g_logger%info('Converged!'//fmt('f12.10', this%mix%delta), __FILE__, __LINE__)
+            niter = this%nstep + 1
             exit
          else
             if (rank == 0) call g_logger%info('Not converged! Diff= '//fmt('f12.10', this%mix%delta), __FILE__, __LINE__)
             niter = niter + 1
          end if
+         if (rank == 0) call g_logger%info('--------------------------------------------------', __FILE__, __LINE__)
       end do
    end subroutine run
    
@@ -1023,7 +1027,9 @@ contains
          write (newunit, '(A)') '|                       Charge Transfer                                   |'
          write (newunit, '(A)') '==========================================================================='
          do ia = 1, this%lattice%nrec
-            write (newunit, '(a,i4,a,f10.6)') 'Charge at atom', ia, ':', sum(this%mix%qia(ia, 1:6))
+            write (newunit, '(a,i4,a,f10.6)') 'Occupation at atom', ia, ':', sum(this%mix%qia(ia, 1:6))
+            write (newunit, '(a,i4,a,3f10.6)') 'Up orbital occupation at atom', ia, ':', this%mix%qia(ia, 1:3)
+            write (newunit, '(a,i4,a,3f10.6)') 'Down orbital occupation at atom', ia, ':', this%mix%qia(ia, 4:6)
             write (newunit, '(a,i4,a,f10.6)') 'Charge transfer at atom', ia, ':', this%charge%dq(ia)
          end do
          !===========================================================================
@@ -1037,6 +1043,16 @@ contains
          do ia = 1, this%lattice%nrec
             write (10, '(a,i4,a,3f10.6)') 'Spin moment direction of atom', ia, ':', (magmom(ia, :))/norm2(magmom(ia, :))
             write (20, '(a,i4,a,3f10.6)') 'Orbital moment direction of atom', ia, ':', (lmom(ia, :))/norm2(lmom(ia, :))
+         end do
+         !===========================================================================
+         !                           Log info     
+         !===========================================================================
+         write (newunit, '(A)') '==========================================================================='
+         write (newunit, '(A)') '|                             Log info                                     |'
+         write (newunit, '(A)') '==========================================================================='
+         write (newunit, '(a,f10.6)') 'Total RMS Diff: ', this%mix%delta
+         do ia = 1, this%lattice%nrec
+            write (newunit, '(a,i4,a,f10.6)') 'RMS Diff of atom', ia, ':', sqrt(sum((this%mix%qia_old(ia, 1:12) - this%mix%qia_new(ia, 1:12))**2))/6.0d0
          end do
       end if
 
@@ -1142,7 +1158,6 @@ contains
        close(ounit)
    
        ! Replace the original file with the temporary file
-       !call rename(temp_filename, filename, status=stat)
        stat = 0
        call rename(temp_filename, filename)
        if (stat /= 0) then
@@ -1237,6 +1252,7 @@ contains
       real(rp), dimension(2) :: qval
 
       ipr = 0
+      ! ipr = 3
       nsp = 2
       lmax = atom%potential%lmax
       rho_in = atom%rho0(nsp)
@@ -1310,7 +1326,7 @@ contains
             do KONF = LCORE + 1, KONFIG - 1
                NCORE = NCORE + 1
                EC(NCORE) = -5.d0
-               atom%QC = atom%QC + DEG
+               atom%qc = atom%qc + DEG
             end do
          end do
       end if
@@ -1325,7 +1341,7 @@ contains
       end if
       ! Print statement, if ipr different than 0. Obsolete, therefore commented.
 !    if (IPR >= 1) then
-!       write (6, 10001) atom%element%atomic_number, atom%potential%ws_r, atom%a, NR, JOB, NCORE, atom%QC, QVAL, atom%DQ, AMGM
+!       write (6, 10001) atom%element%atomic_number, atom%potential%ws_r, atom%a, NR, JOB, NCORE, atom%qc, QVAL, atom%DQ, AMGM
 !       do ISP = 1, NSP
 !          write (6, *) " "
 !          if (NSP == 2) then
@@ -1395,6 +1411,14 @@ contains
          if (IPR >= 3 .or. (IPR >= 2 .and. (DRHO < TOL .or. ITER == 1 .or. ITER == NITER - 1))) then
             write (6, 10004) ITER, SUM, DRHO, VNUCL, RHO0T, VSUM, BETA1
          end if
+         !! if (LAST) then
+         !!    write (333,*) '   '
+         !!    write (444,*) '   '
+         !!    do ir = 1, NR
+         !!       write(333,*) rofi(IR), RHO(IR, 1), RHO(IR,2)
+         !!       write(444,*) rofi(IR), rho_core(IR, 1), rho_core(IR,2)
+         !!    end do
+         !! end if
          if (DRHO < TOL .or. ITER == NITER - 1) then
             LAST = .true.
          end if
@@ -1566,6 +1590,7 @@ contains
             RHO(IR, ISP) = 0.d0
          end do
       end do
+      !call this%RHOCOR(atom, Z, LMAX, KONF, A, B, NR, rofi, V, RHO, G, SUMEC, EC, TOL, NSP, 3)
       call this%RHOCOR(atom, Z, LMAX, KONF, A, B, NR, rofi, V, RHO, G, SUMEC, EC, TOL, NSP, IPR)
       ! ------ LOOP OVER VALENCE STATES -------
       IVAL = 0
@@ -1723,6 +1748,7 @@ contains
       !C = 274.071979d00
       ! ----------------------------
       ICORE = 0
+      ! rho_core = 0.0d0
       do ISP = 1, NSP
          SUMEC(ISP) = 0.d0
          QCORE = 0.d0
@@ -1841,6 +1867,7 @@ contains
                if (ISP == 2) DEG = DFCORE - 7.0d0
             end if
             !==============FIM DA DEFINICAO DE DEG ===================
+            ! DEG = 0.0d0
             do KONF = LP1, KONFIG(LP1) - 1
                ICORE = ICORE + 1
                NODES = KONF - LP1
@@ -1866,6 +1893,7 @@ contains
                   TMC = C - (V(IR, ISP) - 2.d0*Z/R - ECORE)/C
                   GFAC = 1.d0 + FLLP1/(TMC*R)**2
                   RHO(IR, ISP) = RHO(IR, ISP) + DEG*(GFAC*G(IR, 1)**2 + G(IR, 2)**2)
+                  ! rho_core(IR,ISP) = DEG*(GFAC*G(IR, 1)**2 + G(IR, 2)**2)
                end do
                RORIM = 0.d0
                if (NRE == NR) then

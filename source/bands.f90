@@ -248,6 +248,7 @@ contains
       nv1 = this%en%nv1
 
       ! Define the valence electrons from the bulk parameters
+      ! this%qqv = real(sum(this%symbolic_atom(1:this%lattice%nbulk_bulk)%element%valence))
       this%qqv = real(sum(this%symbolic_atom(1:this%lattice%nbulk_bulk)%element%valence))
       if (rank == 0) call g_logger%info('Valence is:'//fmt('f16.6', this%qqv), __FILE__, __LINE__)
       ! Calculate the total density of states
@@ -275,16 +276,28 @@ contains
 
 
       ! Writing the total density of states
-      fname_total = "totaldos.out"
-      open(unit=125, file=fname_total, status='replace', action='write')
-      
       if (rank == 0) then
+         fname_total = "totaldos.out"
+         open(unit=125, file=fname_total, status='replace', action='write')
+
          do i = 1, this%en%channels_ldos + 10
             write(125, '(2f16.5)') this%en%ene(i) - this%en%fermi, this%dtot(i)
          end do
          rewind(125)
+         close(125)
       end if
-      close(125)
+      
+      ! Writing the magnetic density of states
+      if (rank == 0) then
+         fname_total = "magdos.out"
+         open(unit=125, file=fname_total, status='replace', action='write')
+
+         do i = 1, this%en%channels_ldos + 10
+            write(125, '(3f16.5)') this%en%ene(i) - this%en%fermi, sum(dosial(:, 1:9, i)), -sum(dosial(:, 10:18, i))
+         end do
+         rewind(125)
+         close(125)
+      end if
       
       ! Writing the local density of states
       if (rank == 0) then
@@ -305,6 +318,24 @@ contains
          end do
       end if
       
+      if (rank == 0) then
+         do ia = 1, this%lattice%nrec
+            unitnum = 250 + ia
+            ! Construct the filename using the element symbol:
+            fname_dos = trim(this%symbolic_atom(this%lattice%nbulk + ia)%element%symbol) // "_magdos.out"
+               
+            ! Associate that filename with the unit:
+            open(unit=unitnum, file=fname_dos, status='replace', action='write')
+      
+            do i = 1, this%en%channels_ldos + 10
+               write(unitnum, '(3f16.5)') this%en%ene(i) - this%en%fermi, sum(dosial(ia, 1:9, i)), -sum(dosial(ia, 10:18, i))
+            end do
+      
+            rewind(unitnum)
+            close(unitnum)
+         end do
+      end if
+
       ! Writing the local density of states per orbital
       if (rank == 0) then
          do ia = 1, this%lattice%nrec
@@ -1077,7 +1108,8 @@ contains
       integer :: na_loc
       integer :: plusbulk
 
-      call this%calculate_projected_dos()
+      call this%calculate_magnetic_moments()
+      !call this%calculate_projected_dos()
 
       !do na=1, this%lattice%nrec
       do na = start_atom, end_atom
@@ -1110,8 +1142,8 @@ contains
          call g_logger%info('Magnetic field on atom'//fmt('i4', na)//' is '//fmt('f16.6', fx)//' '//fmt('f16.6', fy)//' '//fmt('f16.6', fz), __FILE__, __LINE__)
          call g_logger%info('Magnetic torque on atom'//fmt('i4', na)//' is '//fmt('f16.6', tx)//' '//fmt('f16.6', ty)//' '//fmt('f16.6', tz), __FILE__, __LINE__)
 
-         !print ´(a,i4,a, 3f12.6)´ , "Magnetic mom0 for atom ", na, "=",this%symbolic_atom(plusbulk)%potential%mom0
-         !print ´(a,i4,a, 3f12.6)´ , "Magnetic mom1 for atom ", na, "=", this%symbolic_atom(plusbulk)%potential%mom1
+         ! print '(a,i4,a, 3f12.6)' , "Magnetic mom0 for atom ", na, "=",this%symbolic_atom(plusbulk)%potential%mom0
+         ! print '(a,i4,a, 3f12.6)' , "Magnetic mom1 for atom ", na, "=", this%symbolic_atom(plusbulk)%potential%mom1
          !print ´(a,i4,a, 3f12.6)´ , "Field prefactors for atom ", na, "=", pref_0, pref_1
          !print ´(a,i4,a, 3f12.6)´ , "Magnetic force for atom ", na, "=", I_loc
          !print ´(a,i4,a, 3f12.6)´ , "Magnetic torque for atom ", na, "=", tau_loc

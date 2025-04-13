@@ -21,6 +21,7 @@
 
 module green_mod
 
+   use mpi_mod
    use energy_mod
    use control_mod
    use lattice_mod
@@ -101,6 +102,8 @@ contains
    function constructor(dos_obj) result(obj)
       type(green) :: obj
       type(dos), target, intent(in) :: dos_obj
+
+      integer :: ierr
 
       obj%dos => dos_obj
       obj%recursion => dos_obj%recursion
@@ -206,7 +209,7 @@ contains
       call g_safe_alloc%allocate('green.g00ij', this%g00ij, (/9, 9, this%en%channels_ldos + 10, atoms_per_process/))
       call g_safe_alloc%allocate('green.g00ji', this%g00ji, (/9, 9, this%en%channels_ldos + 10, atoms_per_process/))
       call g_safe_alloc%allocate('green.g00ij', this%g01ij, (/9, 9, this%en%channels_ldos + 10, atoms_per_process/))
-      call g_safe_alloc%allocate('green.g00ji', this%g01ji, (/9, 9, this%en%channels_ldos + 10, atoms_per_process/))
+      call g_safe_alloc%allocate('green.g01ji', this%g01ji, (/9, 9, this%en%channels_ldos + 10, atoms_per_process/))
       call g_safe_alloc%allocate('green.gx0ij', this%gx0ij, (/9, 9, this%en%channels_ldos + 10, atoms_per_process/))
       call g_safe_alloc%allocate('green.gy0ij', this%gy0ij, (/9, 9, this%en%channels_ldos + 10, atoms_per_process/))
       call g_safe_alloc%allocate('green.gz0ij', this%gz0ij, (/9, 9, this%en%channels_ldos + 10, atoms_per_process/))
@@ -273,6 +276,7 @@ contains
       allocate (this%gjz_eta(64, 9, 9, atoms_per_process))
 #endif
 
+   
       this%g0(:, :, :, :) = (0.0d0, 0.0d0)
       this%gij(:, :, :, :) = (0.0d0, 0.0d0)
       this%gji(:, :, :, :) = (0.0d0, 0.0d0)
@@ -287,7 +291,7 @@ contains
       this%g00ij(:, :, :, :) = (0.0d0, 0.0d0)
       this%g00ij(:, :, :, :) = (0.0d0, 0.0d0)
       this%g00ji(:, :, :, :) = (0.0d0, 0.0d0)
-      this%g00ji(:, :, :, :) = (0.0d0, 0.0d0)
+      !this%g00ji(:, :, :, :) = (0.0d0, 0.0d0)
       this%gx0ij(:, :, :, :) = (0.0d0, 0.0d0)
       this%gy0ij(:, :, :, :) = (0.0d0, 0.0d0)
       this%gz0ij(:, :, :, :) = (0.0d0, 0.0d0)
@@ -1269,27 +1273,29 @@ contains
          B2z = 0.0d0
          if (this%control%sym_term) then
             do i = 1, ldim !  Orbital-independent
-               etop = a_diag + 2.0d0*b_diag
-               ebot = a_diag - 2.0d0*b_diag
+               etop = a_diag + 2.0d0*b_diag * 1.00d0
+               ebot = a_diag - 2.0d0*b_diag * 1.00d0
                ea = e(ei) - etop
                eb = e(ei) - ebot
                det = ea*eb
-               zoff = sqrt(det)
+               zoff = sqrt(det) !* 0.25d0
                Q(i, i) = (ze + eta - a_diag - zoff)*0.5d0
             end do
          else
             do i = 1, ldim  ! Orbital-dependent
                if (i == 1 .or. i == 10) then  !(now the s-bands are broadened earlier)
-                  etop = a_inf(i, i) - Cshi_mat(i, i) + 2*b_inf(i, i)*1.025d0/Dfac_mat(i, i)
-                  ebot = a_inf(i, i) - Cshi_mat(i, i) - 2*b_inf(i, i)*1.025d0/Dfac_mat(i, i)
+                  !etop = a_inf(i, i) - Cshi_mat(i, i) + 2*b_inf(i, i)*1.025d0/Dfac_mat(i, i)
+                  !ebot = a_inf(i, i) - Cshi_mat(i, i) - 2*b_inf(i, i)*1.025d0/Dfac_mat(i, i)
+                  etop = a_inf(i, i) - Cshi_mat(i, i) + 2*b_inf(i, i)*1.005d0/Dfac_mat(i, i)
+                  ebot = a_inf(i, i) - Cshi_mat(i, i) - 2*b_inf(i, i)*1.005d0/Dfac_mat(i, i)
                else
-                  etop = a_inf(i, i) - Cshi_mat(i, i) + 2*b_inf(i, i)!*1.01d0/Dfac_mat(i,i)
-                  ebot = a_inf(i, i) - Cshi_mat(i, i) - 2*b_inf(i, i)!*1.01d0/Dfac_mat(i,i)
+                  etop = a_inf(i, i) - Cshi_mat(i, i) + 2*b_inf(i, i)*1.00d0/Dfac_mat(i,i) !*1.01d0/Dfac_mat(i,i)
+                  ebot = a_inf(i, i) - Cshi_mat(i, i) - 2*b_inf(i, i)*1.00d0/Dfac_mat(i,i) !*1.01d0/Dfac_mat(i,i)
                end if
                ea = e(ei)/Dfac_mat(i, i) - etop - 1.0d0*Cshi_mat(i, i)
                eb = e(ei)/Dfac_mat(i, i) - ebot - 1.0d0*Cshi_mat(i, i)
                det = ea*eb
-               zoff = sqrt(det)!*0.5d0
+               zoff = sqrt(det) !*0.25d0
                zoff = zoff*(1.0)**ei
            !!! if(nv<=10) zoff=zoff*1.0d-3   ! Hack for Efermi evaluation
                ! Below for orbital dependent terminator

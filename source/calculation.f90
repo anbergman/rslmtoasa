@@ -238,8 +238,10 @@ contains
       call g_timer%start('pre-processing')
       call lattice_obj%build_data()
       call lattice_obj%bravais()
-      call lattice_obj%build_surf_full()
-      call lattice_obj%newclu()
+      ! Surface / cluster setup temporarily 
+      ! deactivated for spin dynamics
+      ! call lattice_obj%build_surf_full()
+      ! call lattice_obj%newclu()
       call lattice_obj%structb(.true.)
 
       ! Creating the symbolic_atom object
@@ -826,9 +828,11 @@ contains
 
       ! Constructing control object
       control_obj = control(this%fname)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Constructing lattice object
       lattice_obj = lattice(control_obj)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Running the pre-calculation
       call g_timer%start('pre-processing')
@@ -851,12 +855,15 @@ contains
       end select
       ! Creating the symbolic_atom object
       call lattice_obj%atomlist()
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Initializing MPI lookup tables and info.
       call get_mpi_variables(rank, lattice_obj%njij)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Constructing the charge object
       charge_obj = charge(lattice_obj)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       select case (control_obj%calctype)
       case ('B')
@@ -871,13 +878,16 @@ contains
 
       ! Constructing mixing object
       mix_obj = mix(lattice_obj, charge_obj)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Creating the energy object
       energy_obj = energy(lattice_obj)
       call energy_obj%e_mesh()
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Creating hamiltonian object
       hamiltonian_obj = hamiltonian(charge_obj)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
       select case (control_obj%calctype)
       case ('B')
          do i = 1, lattice_obj%nrec
@@ -902,18 +912,23 @@ contains
 
       ! Creating recursion object
       recursion_obj = recursion(hamiltonian_obj, energy_obj)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Creating density of states object
       dos_obj = dos(recursion_obj, energy_obj)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Creating Green function object
       green_obj = green(dos_obj)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Creating bands object
       bands_obj = bands(green_obj)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Creating the exchange object
       exchange_obj = exchange(bands_obj)
+      call MPI_BARRIER(MPI_COMM_WORLD, ierr)
 
       ! Calculating the orthogonal parameters
       do i = 1, lattice_obj%ntype

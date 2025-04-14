@@ -265,15 +265,18 @@ contains
 #else
       allocate (this%lsham(18, 18, this%charge%lattice%ntype))
       allocate (this%tmat(18, 18, 3, this%charge%lattice%ntype))
-      allocate (this%hhmag(9, 9, 4), this%hmag(9, 9, this%charge%lattice%kk, 4))
+      !allocate (this%hhmag(9, 9, 4), this%hmag(9, 9, this%charge%lattice%kk, 4))
+      allocate (this%hhmag(9, 9, 4), this%hmag(9, 9, (maxval(this%charge%lattice%nn(:, 1)) + 1), 4))
       allocate (this%ee(18, 18, (maxval(this%charge%lattice%nn(:, 1)) + 1), this%charge%lattice%ntype))
       allocate (this%hall(18, 18, (maxval(this%charge%lattice%nn(:, 1)) + 1), this%charge%lattice%nmax))
       !if (this%hoh) then
       allocate (this%eeo(18, 18, (maxval(this%charge%lattice%nn(:, 1)) + 1), this%charge%lattice%ntype))
       allocate (this%eeoee(18, 18, (maxval(this%charge%lattice%nn(:, 1)) + 1), this%charge%lattice%ntype))
       allocate (this%hallo(18, 18, (maxval(this%charge%lattice%nn(:, 1)) + 1), this%charge%lattice%nmax))
-      allocate (this%obarm(18, 18, this%charge%lattice%ntype))
-      allocate (this%enim(18, 18, this%charge%lattice%ntype))
+      !allocate (this%obarm(18, 18, this%charge%lattice%ntype))
+      !allocate (this%enim(18, 18, this%charge%lattice%ntype))
+      allocate (this%obarm(18, 18, this%lattice%ntype))
+      allocate (this%enim(18, 18, this%lattice%ntype))
       !end if
       !if (this%local_axis) then
       allocate (this%ee_glob(18, 18, (maxval(this%charge%lattice%nn(:, 1)) + 1), this%charge%lattice%ntype))
@@ -859,8 +862,8 @@ contains
                   this%ee(j + 9, i, m, ntype) = this%hmag(j, i, m, 1) + i_unit*this%hmag(j, i, m, 2) ! Hx+iHy
                end do ! end of orbital j loop
             end do ! end of orbital i loop
-            write(128, *) 'm=', m, 'ntype= ', ntype
-            write(128, '(18f10.6)') real(this%ee(:, :, m, ntype))
+            ! write(128, *) 'm=', m, 'ntype= ', ntype
+            ! write(128, '(18f10.6)') real(this%ee(:, :, m, ntype))
          end do ! end of neighbour number
          if (this%hoh) then
             call this%build_obarm()
@@ -893,7 +896,8 @@ contains
          this%ee_glob = this%ee
          if (this%hoh) this%eeo_glob = this%eeo
       end if
-      close (128)
+      ! rewind(128)
+      ! close (128)
    end subroutine build_bulkham
 
    subroutine build_locham(this)
@@ -1090,12 +1094,12 @@ contains
                   end if
                end do
             end if
-            write (128, *) 'm=', k, 'Atom=', jj, 'Coordinates=', this%charge%lattice%cr(:, jj), 'Ntype=', ntype, 'Index=', idx(k, :)
-            write (129, *) 'm=', k, 'Atom=', jj, 'Coordinates=', this%charge%lattice%cr(:, jj), 'Ntype=', ntype, 'Index=', idx(k, :)
-            write (128, '(18f10.6)') real(this%EE(1:18, 1:18, k, ntype))*13.605703976
-            write (129, '(18f10.6)') aimag(this%EE(1:18, 1:18, k, ntype))*13.605703976
-            write (128, *) sum(real(this%ee(:, :, k, ntype)))
-            write (129, *) sum(real(this%ee(:, :, k, ntype)))
+            ! write (128, *) 'm=', k, 'Atom=', jj, 'Coordinates=', this%charge%lattice%cr(:, jj), 'Ntype=', ntype, 'Index=', idx(k, :)
+            ! write (129, *) 'm=', k, 'Atom=', jj, 'Coordinates=', this%charge%lattice%cr(:, jj), 'Ntype=', ntype, 'Index=', idx(k, :)
+            ! write (128, '(18f10.6)') real(this%EE(1:18, 1:18, k, ntype))*13.605703976
+            ! write (129, '(18f10.6)') aimag(this%EE(1:18, 1:18, k, ntype))*13.605703976
+            ! write (128, *) sum(real(this%ee(:, :, k, ntype)))
+            ! write (129, *) sum(real(this%ee(:, :, k, ntype)))
          end do
       end do
       !$omp end parallel do
@@ -1204,9 +1208,9 @@ contains
 !            end if
 !          end do
             end if
-            write (128, *) 'm=', k, 'Atom=', jj, 'Coordinates=', this%charge%lattice%cr(:, jj), 'Ntype=', ntype, 'Index=', idx(k, :)
-            write (128, '(18f10.6)') real(this%EE(1:18, 1:18, k, ntype))!*13.605703976
-            write (128, *) sum(real(this%ee(:, :, k, ntype)))
+            ! write (128, *) 'm=', k, 'Atom=', jj, 'Coordinates=', this%charge%lattice%cr(:, jj), 'Ntype=', ntype, 'Index=', idx(k, :)
+            ! write (128, '(18f10.6)') real(this%EE(1:18, 1:18, k, ntype))!*13.605703976
+            ! write (128, *) sum(real(this%ee(:, :, k, ntype)))
             !write(129,*)´m=´,k, ´Atom=´, jj, ´Coordinates=´, this%charge%lattice%cr(:, jj), ´Ntype=´,ntype, ´Index=´, idx(k,:)
             !write(129,´(9f10.6)´) real(this%EE(10:18,1:9,k,ntype))*13.605703976
             !write(129,*) sum(real(this%ee(:,:,k,ntype)))

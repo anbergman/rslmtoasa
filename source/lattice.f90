@@ -936,10 +936,10 @@ contains
       this%b1 = .false.
       this%b2 = .false.
       this%b3 = .false.
-      this%pbc = .false.
-      this%n1 = 0
-      this%n2 = 0
-      this%n3 = 0
+      this%pbc = .true.
+      this%n1 = 1
+      this%n2 = 1
+      this%n3 = 1
 #ifdef USE_SAFE_ALLOC
       call g_safe_alloc%allocate('lattice.izp', this%izp, (/this%ndim/))
       call g_safe_alloc%allocate('lattice.no', this%no, (/this%ndim/))
@@ -990,6 +990,8 @@ contains
       integer :: npe, ndim, nx, ny, nz, npr, l, n, i, nl, k, kk
       logical :: isopen
       integer :: iostatus
+      integer :: n1p, n2p, n3p, na_org, na_opt
+      real(rp) :: k_fac, q_fac
 
       inquire (unit=10, opened=isopen)
       if (isopen) then
@@ -999,6 +1001,27 @@ contains
       end if
 
       n = this%ntot
+
+      ! If PBC, recalculate n1, n2, n3 so that the number of atoms are approx=ndim
+      if (this%pbc) then
+         na_org = this%n1 * this%n2 * this%n3 * n
+         q_fac = (this%n1* this%n2 * this%n3 * n) / (1.0_rp * this%n1**3)
+         ! q_fac = ((this%n1 + 1)* (this%n2 +1) * (this%n3 + 1) * n) / (1.0_rp * (this%n1 + 1)**3)
+         na_opt = this%ndim
+         k_fac = (na_opt/q_fac)**(1.0_rp/3.0_rp)
+         n1p = ceiling(k_fac)
+         n2p = ceiling(k_fac * this%n2/this%n1)
+         n3p = ceiling(k_fac * this%n3/this%n1)
+         ! print *,':: na_pre: ', na_opt, this%n1, this%n2, this%n3, n
+         na_opt = n1p * n2p * n3p * n
+         this%n1 = n1p -1
+         this%n2 = n2p -1
+         this%n3 = n3p -1
+         ! print *,':: na_opt: ', na_opt, n1p,n2p,n3p
+         this%ndim = na_opt
+         ndim = this%ndim
+      end if
+
       ! Defining a size-like parameter for the clust before the cut
       npe = this%npe
       ndim = this%ndim
@@ -1011,7 +1034,7 @@ contains
 
       npr = int((ndim/(n*1.0d0))**(1.0d0/3.0d0))
 
-      crbravais(:, :) = this%crd(:, :)
+      crbravais(:, 1:n) = this%crd(:, 1:n)
       if (this%pbc) then
          lcx = (this%n1 + 1)/2
          lcy = (this%n2 + 1)/2
@@ -1035,6 +1058,7 @@ contains
                   n = n + 1
 !  ...........Verifies dimension NDIM.........................
                   if (n .gt. ndim) then
+                     print *,i,nx,ny,nz,n,ndim
                      write (6, 600) n
                      stop
                   end if
@@ -1086,6 +1110,9 @@ contains
       call move_alloc(iz, this%iz)
       call move_alloc(num, this%num)
       close (10)
+
+      print *,'Bravais lattice created'
+      print *, 'End of bravais lattice initialization'  ! Added for clarity on completion
    end subroutine bravais
 
    !---------------------------------------------------------------------------
@@ -1834,9 +1861,9 @@ contains
          this%nn(:, ii) = nn(:, ii)
       end do
 #ifdef USE_SAFE_ALLOC
-      call g_safe_alloc%allocate('lattice.sbar', this%sbar, (/9, 9, nm, this%ntot/))
+      call g_safe_alloc%allocate('lattice.sbar', this%sbar, (/9, 9, nm+1, this%kk/))
 #else
-      allocate (this%sbar(9, 9, nm, this%ntot))
+      allocate (this%sbar(9, 9, nm+1, this%kk))
 #endif
       write (17, *) 'ndi=', kk
       write (17, *) 'remd'
@@ -1849,7 +1876,7 @@ contains
             ia = this%iu(ii)
             nr = this%nn(ia, 1)
             write (17, '(1x, a, i5, a, i5)') 'Sbar atom no:', ii, ' Ntot:', this%ntot
-            call this%dbar1(ia, ncut*this%r2, this%wav, this%cr*this%alat, kk, kk, this%control%npold, nr, ii)
+            call this%dbar1(ia, ncut*this%r2, this%wav, this%cr*this%alat, kk, kk, this%control%npold, nr, ii, nm)
          end do
       end if
 10000 format(i5)
@@ -2150,7 +2177,7 @@ contains
    !> @brief
    !> TODO
    !---------------------------------------------------------------------------
-   subroutine dbar1(this, ia, r2, wav, crd, nat, ndi, np, nr, ii)
+   subroutine dbar1(this, ia, r2, wav, crd, nat, ndi, np, nr, ii, nt_in)
       implicit none
       class(lattice), intent(inout) :: this
       ! Inputs
@@ -2158,6 +2185,7 @@ contains
       integer, intent(in) :: nr, ii
       real(rp), intent(in) :: r2, wav
       real(rp), dimension(3, ndi), intent(in) :: crd
+      integer, intent(in) :: nt_in
       ! Local Scalars
       integer :: i, j, k, m, na, nrl, nt
       real(rp), dimension(:), allocatable :: bet, wk
@@ -2170,6 +2198,9 @@ contains
       !external CLUSBA, MICHA
 
       nt = 5250 !350
+      !call this%clusba_range(r2, crd, ia, nat, ndi, nt)
+   
+      ! nt = nt_in
       allocate (cr(3, nt))
       allocate (sbar(np, np, nt))
       call this%clusba(r2, crd, ia, nat, ndi, nt)
@@ -2186,10 +2217,10 @@ contains
       ! Saving parameters to be used in the Hamiltonian build
       call this%clusba((r2/9.0d0), crd, ia, nat, ndi, nt)
 
-      do m = 1, nt
+      do m = 1, nr
          do i = 1, 9
             do j = 1, 9
-               this%sbar(i, j, m, ii) = sbar(i, j, m)
+              this%sbar(i, j, m, ii) = sbar(i, j, m)
             end do
          end do
       end do
@@ -2267,6 +2298,49 @@ contains
       end do
       n = ii
    end subroutine clusba
+
+   !---------------------------------------------------------------------------
+   ! DESCRIPTION:
+   !> @brief
+   !> TODO
+   !
+   !> @param[in] r2
+   !> @param[in] crd
+   !> @param[in] ia
+   !> @param[in] nat
+   !> @param[in] ndi
+   !> @param[inout] n
+   !> @param[inout] cr
+   !> @return type(calculation)
+   !---------------------------------------------------------------------------
+   subroutine clusba_range(this, r2, crd, ia, nat, ndi, n)
+      implicit none
+      class(lattice), intent(inout) :: this
+      ! Inputs
+      integer, intent(in) :: ia, nat, ndi
+      real(rp), intent(in) :: r2
+      real(rp), dimension(3, ndi), intent(in) :: crd
+      ! Output
+      integer, intent(inout) :: n
+      ! Local variables
+      integer :: i, ii, k, nn
+      real(rp) :: s1
+      real(rp), dimension(3) :: dum
+
+      n = 0
+      ii = 1
+      do nn = 1, nat
+         s1 = 0.0
+         do i = 1, 3
+            dum(i) = (crd(i, nn) - crd(i, ia))**2
+            s1 = s1 + dum(i)
+         end do
+         if (s1 < r2 .and. s1 > 0.0001) then
+            ii = ii + 1
+         end if
+      end do
+      n = ii
+   end subroutine clusba_range
 
    !---------------------------------------------------------------------------
    ! DESCRIPTION:
@@ -2459,7 +2533,7 @@ contains
       ! --------------------------------
       ir = 0
       hitc = 0
-      !print *, ´ nr = ´, nr
+      !print *, 'SHLDCH  nr = ', nr
       do ir = 1, nr
          if (abs(R(1, IR)**2 + R(2, IR)**2 + R(3, IR)**2 - &
                  R(1, 1)**2 + R(2, 1)**2 + R(3, 1)**2) <= (R2/ncut)) then
@@ -2498,6 +2572,7 @@ contains
             end do
          end if
       end do
+      ! print *, 'SHLDCH  hitc = ', hitc
       !print *, ´ hitc = ´, hitc
       return
       !

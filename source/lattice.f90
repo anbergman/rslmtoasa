@@ -923,7 +923,8 @@ contains
       class(lattice) :: this
       logical, intent(in), optional :: full
 
-      this%ndim = 9900000
+      !this%ndim = 9900000
+      this%ndim = 100000
       this%npe = 49
       this%nclu = 0
       this%surftype = 'none'
@@ -936,7 +937,7 @@ contains
       this%b1 = .false.
       this%b2 = .false.
       this%b3 = .false.
-      this%pbc = .true.
+      this%pbc = .false.
       this%n1 = 1
       this%n2 = 1
       this%n3 = 1

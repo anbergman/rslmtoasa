@@ -884,9 +884,16 @@ contains
    
       call this%mix%mix_magnetic_moments(this%mix%mag_old, this%mix%mag_new, this%mix%mag_mix, this%symbolic_atom(:)%potential%mtot)
    
-      do ia = 1, this%lattice%nrec
-         this%symbolic_atom(this%lattice%nbulk + ia)%potential%mom(:) = this%mix%mag_mix(ia, :)
-      end do
+      !print *,'AB debug: freeze:', this%freeze
+      !print *,'AB debug: pre mom(ia=1):', this%symbolic_atom(this%lattice%nbulk + 1)%potential%mom(:)
+      !print *,'AB debug: mag_old(ia=1):', this%mix%mag_old(1,:)
+      !print *,'AB debug: mag_mix(ia=1):', this%mix%mag_mix(1,:)
+      if (.not. this%freeze ) then
+         do ia = 1, this%lattice%nrec
+            this%symbolic_atom(this%lattice%nbulk + ia)%potential%mom(:) = this%mix%mag_mix(ia, :)
+         end do
+      end if
+      !print *,'AB debug: aft mom(ia=1):', this%symbolic_atom(this%lattice%nbulk + 1)%potential%mom(:)
    
       !=========================================================================
       !                  CALCULATE THE NEW BAND MOMENTS QL

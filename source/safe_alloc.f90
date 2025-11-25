@@ -42,23 +42,51 @@ module safe_alloc_mod
       procedure, private :: allocate_int_1d, allocate_int_2d, allocate_int_3d, allocate_int_4d
       procedure, private :: allocate_real4_1d, allocate_real4_2d, allocate_real4_3d, allocate_real4_4d
       procedure, private :: allocate_real8_1d, allocate_real8_2d, allocate_real8_3d, allocate_real8_4d
+      procedure, private :: allocate_real8_5d
       procedure, private :: allocate_complex16_1d, allocate_complex16_2d, allocate_complex16_3d, allocate_complex16_4d
+      procedure, private :: allocate_complex16_5d
+      procedure, private :: allocate_logical_1d
       procedure, private :: deallocate_int_1d, deallocate_int_2d, deallocate_int_3d, deallocate_int_4d
       procedure, private :: deallocate_real4_1d, deallocate_real4_2d, deallocate_real4_3d, deallocate_real4_4d
       procedure, private :: deallocate_real8_1d, deallocate_real8_2d, deallocate_real8_3d, deallocate_real8_4d
+      procedure, private :: deallocate_real8_5d
       procedure, private :: deallocate_complex16_1d, deallocate_complex16_2d, deallocate_complex16_3d, deallocate_complex16_4d
+      procedure, private :: deallocate_complex16_5d
+      procedure, private :: deallocate_logical_1d
       procedure, private :: move_alloc_int_1d, move_alloc_int_2d, move_alloc_int_3d, move_alloc_int_4d
       procedure, private :: move_alloc_real4_1d, move_alloc_real4_2d, move_alloc_real4_3d, move_alloc_real4_4d
       procedure, private :: move_alloc_real8_1d, move_alloc_real8_2d, move_alloc_real8_3d, move_alloc_real8_4d
+      procedure, private :: move_alloc_real8_5d
       procedure, private :: move_alloc_complex16_1d, move_alloc_complex16_2d, move_alloc_complex16_3d, move_alloc_complex16_4d
+      procedure, private :: move_alloc_complex16_5d
+      procedure, private :: move_alloc_logical_1d
       procedure, private :: report_allocate_int_1d, report_allocate_int_2d, report_allocate_int_3d, report_allocate_int_4d
       procedure, private :: report_allocate_real4_1d, report_allocate_real4_2d, report_allocate_real4_3d, report_allocate_real4_4d
       procedure, private :: report_allocate_real8_1d, report_allocate_real8_2d, report_allocate_real8_3d, report_allocate_real8_4d
+      procedure, private :: report_allocate_real8_5d
       procedure, private :: report_allocate_complex16_1d, report_allocate_complex16_2d, report_allocate_complex16_3d, report_allocate_complex16_4d
-      generic :: allocate => allocate_int_0d, allocate_real4_0d, allocate_real8_0d, allocate_complex16_0d, allocate_int_1d, allocate_int_2d, allocate_int_3d, allocate_int_4d, allocate_real4_1d, allocate_real4_2d, allocate_real4_3d, allocate_real4_4d, allocate_real8_1d, allocate_real8_2d, allocate_real8_3d, allocate_real8_4d, allocate_complex16_1d, allocate_complex16_2d, allocate_complex16_3d, allocate_complex16_4d
-      generic :: deallocate => deallocate_int_1d, deallocate_int_2d, deallocate_int_3d, deallocate_int_4d, deallocate_real4_1d, deallocate_real4_2d, deallocate_real4_3d, deallocate_real4_4d, deallocate_real8_1d, deallocate_real8_2d, deallocate_real8_3d, deallocate_real8_4d, deallocate_complex16_1d, deallocate_complex16_2d, deallocate_complex16_3d, deallocate_complex16_4d
-      generic :: move_alloc => move_alloc_int_1d, move_alloc_int_2d, move_alloc_int_3d, move_alloc_int_4d, move_alloc_real4_1d, move_alloc_real4_2d, move_alloc_real4_3d, move_alloc_real4_4d, move_alloc_real8_1d, move_alloc_real8_2d, move_alloc_real8_3d, move_alloc_real8_4d, move_alloc_complex16_1d, move_alloc_complex16_2d, move_alloc_complex16_3d, move_alloc_complex16_4d
-      generic :: report_allocate => report_allocate_int_1d, report_allocate_int_2d, report_allocate_int_3d, report_allocate_int_4d, report_allocate_real4_1d, report_allocate_real4_2d, report_allocate_real4_3d, report_allocate_real4_4d, report_allocate_real8_1d, report_allocate_real8_2d, report_allocate_real8_3d, report_allocate_real8_4d, report_allocate_complex16_1d, report_allocate_complex16_2d, report_allocate_complex16_3d, report_allocate_complex16_4d
+      procedure, private :: report_allocate_complex16_5d
+      procedure, private :: report_allocate_logical_1d
+      generic :: allocate => allocate_int_0d, allocate_real4_0d, allocate_real8_0d, allocate_complex16_0d, allocate_int_1d,&
+      allocate_int_2d, allocate_int_3d, allocate_int_4d, allocate_real4_1d, allocate_real4_2d, allocate_real4_3d, allocate_real4_4d,&
+      allocate_real8_1d, allocate_real8_2d, allocate_real8_3d, allocate_real8_4d, allocate_real8_5d, &
+      allocate_complex16_1d, allocate_complex16_2d,&
+      allocate_complex16_3d, allocate_complex16_4d, allocate_complex16_5d, allocate_logical_1d
+      generic :: deallocate => deallocate_int_1d, deallocate_int_2d, deallocate_int_3d, deallocate_int_4d, deallocate_real4_1d,&
+      deallocate_real4_2d, deallocate_real4_3d, deallocate_real4_4d, deallocate_real8_1d, deallocate_real8_2d, deallocate_real8_3d,&
+      deallocate_real8_4d, deallocate_real8_5d, &
+      deallocate_complex16_1d, deallocate_complex16_2d, deallocate_complex16_3d, deallocate_complex16_4d,&
+      deallocate_complex16_5d, deallocate_logical_1d
+      generic :: move_alloc => move_alloc_int_1d, move_alloc_int_2d, move_alloc_int_3d, move_alloc_int_4d, move_alloc_real4_1d,&
+      move_alloc_real4_2d, move_alloc_real4_3d, move_alloc_real4_4d, move_alloc_real8_1d, move_alloc_real8_2d, move_alloc_real8_3d,&
+      move_alloc_real8_4d, move_alloc_real8_5d,&
+      move_alloc_complex16_1d, move_alloc_complex16_2d, move_alloc_complex16_3d, move_alloc_complex16_4d,&
+      move_alloc_complex16_5d, move_alloc_logical_1d
+      generic :: report_allocate => report_allocate_int_1d, report_allocate_int_2d, report_allocate_int_3d, report_allocate_int_4d,&
+      report_allocate_real4_1d, report_allocate_real4_2d, report_allocate_real4_3d, report_allocate_real4_4d,&
+      report_allocate_real8_1d, report_allocate_real8_2d, report_allocate_real8_3d, report_allocate_real8_4d, report_allocate_real8_5d,&
+      report_allocate_complex16_1d, report_allocate_complex16_2d, report_allocate_complex16_3d, report_allocate_complex16_4d,&
+      report_allocate_complex16_5d, report_allocate_logical_1d
       procedure :: print_report => safe_alloc_report
       procedure :: get_allocations_total
       procedure :: get_allocations_memory
@@ -80,8 +108,9 @@ module safe_alloc_mod
    interface get_type
       procedure :: get_type_int_1d, get_type_int_2d, get_type_int_3d, get_type_int_4d
       procedure :: get_type_real4_1d, get_type_real4_2d, get_type_real4_3d, get_type_real4_4d
-      procedure :: get_type_real8_1d, get_type_real8_2d, get_type_real8_3d, get_type_real8_4d
-      procedure :: get_type_complex16_1d, get_type_complex16_2d, get_type_complex16_3d, get_type_complex16_4d
+      procedure :: get_type_real8_1d, get_type_real8_2d, get_type_real8_3d, get_type_real8_4d, get_type_real8_5d
+      procedure :: get_type_complex16_1d, get_type_complex16_2d, get_type_complex16_3d, get_type_complex16_4d, get_type_complex16_5d
+      procedure :: get_type_logical_1d
    end interface get_type
 
    ! Global
@@ -312,6 +341,12 @@ contains
       include 'include_codes/safe_alloc/allocate_part2_4d.f90'
       include 'include_codes/safe_alloc/allocate_part3.f90'
    end subroutine allocate_real8_4d
+   subroutine allocate_real8_5d(this, label, list, list_size)
+      real(8), dimension(:, :, :, :, :), allocatable, intent(inout) :: list
+      include 'include_codes/safe_alloc/allocate_part1.f90'
+      include 'include_codes/safe_alloc/allocate_part2_5d.f90'
+      include 'include_codes/safe_alloc/allocate_part3.f90'
+   end subroutine allocate_real8_5d
 
    subroutine allocate_complex16_0d(this, label, list, list_size)
       complex(8), dimension(:), allocatable, intent(inout) :: list
@@ -341,6 +376,18 @@ contains
       include 'include_codes/safe_alloc/allocate_part2_4d.f90'
       include 'include_codes/safe_alloc/allocate_part3.f90'
    end subroutine allocate_complex16_4d
+   subroutine allocate_complex16_5d(this, label, list, list_size)
+      complex(8), dimension(:, :, :, :, :), allocatable, intent(inout) :: list
+      include 'include_codes/safe_alloc/allocate_part1.f90'
+      include 'include_codes/safe_alloc/allocate_part2_5d.f90'
+      include 'include_codes/safe_alloc/allocate_part3.f90'
+   end subroutine allocate_complex16_5d
+   subroutine allocate_logical_1d(this, label, list, list_size)
+      logical, dimension(:), allocatable, intent(inout) :: list
+      include 'include_codes/safe_alloc/allocate_part1.f90'
+      include 'include_codes/safe_alloc/allocate_part2_1d.f90'
+      include 'include_codes/safe_alloc/allocate_part3.f90'
+   end subroutine allocate_logical_1d
 
    subroutine deallocate_int_1d(this, label, list)
       integer, dimension(:), allocatable, intent(inout) :: list
@@ -392,6 +439,10 @@ contains
       real(8), dimension(:, :, :, :), allocatable, intent(inout) :: list
       include 'include_codes/safe_alloc/deallocate.f90'
    end subroutine deallocate_real8_4d
+   subroutine deallocate_real8_5d(this, label, list)
+      real(8), dimension(:, :, :, :, :), allocatable, intent(inout) :: list
+      include 'include_codes/safe_alloc/deallocate.f90'
+   end subroutine deallocate_real8_5d
 
    subroutine deallocate_complex16_1d(this, label, list)
       complex(8), dimension(:), allocatable, intent(inout) :: list
@@ -409,6 +460,15 @@ contains
       complex(8), dimension(:, :, :, :), allocatable, intent(inout) :: list
       include 'include_codes/safe_alloc/deallocate.f90'
    end subroutine deallocate_complex16_4d
+   subroutine deallocate_complex16_5d(this, label, list)
+      complex(8), dimension(:, :, :, :, :), allocatable, intent(inout) :: list
+      include 'include_codes/safe_alloc/deallocate.f90'
+   end subroutine deallocate_complex16_5d
+
+   subroutine deallocate_logical_1d(this, label, list)
+      logical, dimension(:), allocatable, intent(inout) :: list
+      include 'include_codes/safe_alloc/deallocate.f90'
+   end subroutine deallocate_logical_1d
 
    subroutine move_alloc_int_1d(this, src, dst, label_src, label_dst)
       integer, dimension(:), allocatable, intent(inout) :: src, dst
@@ -460,6 +520,10 @@ contains
       real(8), dimension(:, :, :, :), allocatable, intent(inout) :: src, dst
       include 'include_codes/safe_alloc/move_alloc.f90'
    end subroutine move_alloc_real8_4d
+   subroutine move_alloc_real8_5d(this, src, dst, label_src, label_dst)
+      real(8), dimension(:, :, :, :, :), allocatable, intent(inout) :: src, dst
+      include 'include_codes/safe_alloc/move_alloc.f90'
+   end subroutine move_alloc_real8_5d
 
    subroutine move_alloc_complex16_1d(this, src, dst, label_src, label_dst)
       complex(8), dimension(:), allocatable, intent(inout) :: src, dst
@@ -477,6 +541,15 @@ contains
       complex(8), dimension(:, :, :, :), allocatable, intent(inout) :: src, dst
       include 'include_codes/safe_alloc/move_alloc.f90'
    end subroutine move_alloc_complex16_4d
+   subroutine move_alloc_complex16_5d(this, src, dst, label_src, label_dst)
+      complex(8), dimension(:, :, :, :, :), allocatable, intent(inout) :: src, dst
+      include 'include_codes/safe_alloc/move_alloc.f90'
+   end subroutine move_alloc_complex16_5d
+
+   subroutine move_alloc_logical_1d(this, src, dst, label_src, label_dst)
+      logical, dimension(:), allocatable, intent(inout) :: src, dst
+      include 'include_codes/safe_alloc/move_alloc.f90'
+   end subroutine move_alloc_logical_1d
 
    subroutine safe_alloc_report(this)
       class(safe_alloc), intent(in) :: this
@@ -566,6 +639,11 @@ contains
       character(len=:), allocatable :: get_type
       get_type = 'real(8)'
    end function get_type_real8_4d
+   function get_type_real8_5d(list) result(get_type)
+      real(8), dimension(:, :, :, :, :), allocatable :: list
+      character(len=:), allocatable :: get_type
+      get_type = 'real(8)'
+   end function get_type_real8_5d
 
    function get_type_complex16_1d(list) result(get_type)
       complex(8), dimension(:), allocatable :: list
@@ -587,6 +665,17 @@ contains
       character(len=:), allocatable :: get_type
       get_type = 'complex(8)'
    end function get_type_complex16_4d
+   function get_type_complex16_5d(list) result(get_type)
+      complex(8), dimension(:, :, :, :, :), allocatable :: list
+      character(len=:), allocatable :: get_type
+      get_type = 'complex(8)'
+   end function get_type_complex16_5d
+
+   function get_type_logical_1d(list) result(get_type)
+      logical, dimension(:), allocatable :: list
+      character(len=:), allocatable :: get_type
+      get_type = 'logical'
+   end function get_type_logical_1d
 
    subroutine report_allocate_int_1d(this, label, list)
       integer, dimension(:), allocatable, intent(in) :: list
@@ -638,6 +727,10 @@ contains
       real(8), dimension(:, :, :, :), allocatable, intent(in) :: list
       include 'include_codes/safe_alloc/report_allocate.f90'
    end subroutine report_allocate_real8_4d
+   subroutine report_allocate_real8_5d(this, label, list)
+      real(8), dimension(:, :, :, :, :), allocatable, intent(in) :: list
+      include 'include_codes/safe_alloc/report_allocate.f90'
+   end subroutine report_allocate_real8_5d
    subroutine report_allocate_complex16_1d(this, label, list)
       complex(8), dimension(:), allocatable, intent(in) :: list
       include 'include_codes/safe_alloc/report_allocate.f90'
@@ -654,4 +747,13 @@ contains
       complex(8), dimension(:, :, :, :), allocatable, intent(in) :: list
       include 'include_codes/safe_alloc/report_allocate.f90'
    end subroutine report_allocate_complex16_4d
+   subroutine report_allocate_complex16_5d(this, label, list)
+      complex(8), dimension(:, :, :, :, :), allocatable, intent(in) :: list
+      include 'include_codes/safe_alloc/report_allocate.f90'
+   end subroutine report_allocate_complex16_5d
+
+   subroutine report_allocate_logical_1d(this, label, list)
+      logical, dimension(:), allocatable, intent(in) :: list
+      include 'include_codes/safe_alloc/report_allocate.f90'
+   end subroutine report_allocate_logical_1d
 end module safe_alloc_mod

@@ -362,12 +362,13 @@ contains
       select case(this%control%cond_calctype)
       case('per_type')
          call g_safe_alloc%allocate('recursion.mu_nm_stochastic', this%mu_nm_stochastic, (/2*(lmax + 1)**2, 2*(lmax + 1)**2, &
-                                                                                       (this%lattice%control%cond_ll, &
-                                                                               this%lattice%control%cond_ll, this%lattice%ntype/)
+                                                                                       this%lattice%control%cond_ll, &
+                                                                               this%lattice%control%cond_ll, this%lattice%ntype/))
       case('random_vec')
          call g_safe_alloc%allocate('recursion.mu_nm_stochastic', this%mu_nm_stochastic, (/2*(lmax + 1)**2, 2*(lmax + 1)**2, &
-                                                                                       (this%lattice%control%cond_ll, &
-                                                                               this%lattice%control%cond_ll, this%control%random_vec_num/)
+                                                                                       this%lattice%control%cond_ll, &
+                                                                               this%lattice%control%cond_ll, this%control%random_vec_num/))
+      end select
 #else
       select case(this%control%cond_calctype)
       case('per_type')
@@ -2794,12 +2795,12 @@ contains
       call g_safe_alloc%allocate('recursion.v', this%v, (/18, this%lattice%kk/))
       if ((this%lattice%njij == 0) .and. (this%lattice%njijk == 0)) then
          call g_safe_alloc%allocate('recursion.a_b', this%a_b, (/18, 18, this%control%lld, this%lattice%nrec/))
-         call g_safe_alloc%allocate('recursion.b2_b', this%b2_b, (/18, 18, this%control%lld,, this%lattice%nrec/))
+         call g_safe_alloc%allocate('recursion.b2_b', this%b2_b, (/18, 18, this%control%lld, this%lattice%nrec/))
          call g_safe_alloc%allocate('recursion.mu_n', this%mu_n, (/18, 18, (2*this%lattice%control%lld) + 2, this%lattice%nrec/))
          call g_safe_alloc%allocate('recursion.mu_ng', this%mu_ng, (/18, 18, (2*this%lattice%control%lld) + 2, this%lattice%nrec/))
       else
          call g_safe_alloc%allocate('recursion.a_b', this%a_b, (/2*(lmax + 1)**2, 2*(lmax + 1)**2, this%control%lld, this%lattice%njij*4/))
-         call g_safe_alloc%allocate('recursion.b2_b', this%b2_b, (/2*(lmax + 1)**2, 2*(lmax + 1)**2, this%control%lld,, this%lattice%njij*4/))
+         call g_safe_alloc%allocate('recursion.b2_b', this%b2_b, (/2*(lmax + 1)**2, 2*(lmax + 1)**2, this%control%lld, this%lattice%njij*4/))
          call g_safe_alloc%allocate('recursion.mu_n', this%mu_n, (/2*(lmax + 1)**2, 2*(lmax + 1)**2, (2*this%lattice%control%lld) + 2, this%lattice%njij*4/))
          call g_safe_alloc%allocate('recursion.mu_ng', this%mu_ng, (/2*(lmax + 1)**2, 2*(lmax + 1)**2, (2*this%lattice%control%lld) + 2, this%lattice%njij*4/))
       end if

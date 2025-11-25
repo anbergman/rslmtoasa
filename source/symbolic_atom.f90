@@ -250,15 +250,15 @@ contains
       do l = 0, 2
          ml = l*l + 1
          ! Original orthogonal representation
-         cu = cmplx(this%potential%c(l, 1) + this%potential%vmad, 0.0d0)
-         cd = cmplx(this%potential%c(l, 2) + this%potential%vmad, 0.0d0)
-         wu = cmplx(this%potential%dele(l, 1), 0.0d0)
-         wd = cmplx(this%potential%dele(l, 2), 0.0d0)
+         ! cu = cmplx(this%potential%c(l, 1) + this%potential%vmad, 0.0d0)
+         ! cd = cmplx(this%potential%c(l, 2) + this%potential%vmad, 0.0d0)
+         ! wu = cmplx(this%potential%dele(l, 1), 0.0d0)
+         ! wd = cmplx(this%potential%dele(l, 2), 0.0d0)
          ! Screened (TB) representation
-         ! cu = cmplx(this%potential%center_band(l+1, 1) + this%potential%vmad, 0.0d0)
-         ! cd = cmplx(this%potential%center_band(l+1, 2) + this%potential%vmad, 0.0d0)
-         ! wu = cmplx(this%potential%width_band(l+1, 1), 0.0d0)
-         ! wd = cmplx(this%potential%width_band(l+1, 2), 0.0d0)
+         cu = cmplx(this%potential%center_band(l+1, 1) + this%potential%vmad, 0.0d0)
+         cd = cmplx(this%potential%center_band(l+1, 2) + this%potential%vmad, 0.0d0)
+         wu = cmplx(this%potential%width_band(l+1, 1), 0.0d0)
+         wd = cmplx(this%potential%width_band(l+1, 2), 0.0d0)
          ! Third option...
          ! wu = cmplx(this%potential%srdel(l, 1), 0.0d0)
          ! wd = cmplx(this%potential%srdel(l, 2), 0.0d0)

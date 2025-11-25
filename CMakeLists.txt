@@ -41,6 +41,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${fortran_output_directory})
 ##############################################################################################
 option(ENABLE_OPENMP "Use OpenMP for parallelization" ON)
 option(ENABLE_MPI "Use MPI for parallelization" OFF)
+option(ENABLE_SAFE_ALLOC "Use SAFE_ALLOC allocations" OFF)
 option(ENABLE_FLUSH "Flush printouts" OFF)
 option(COLOR "Color printouts" ON)
 option(RUN_REG_TESTS "Run regression tests" OFF)
@@ -85,6 +86,10 @@ if(ENABLE_MPI)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DUSE_MPI")
     endif()
 endif(ENABLE_MPI)
+
+if(ENABLE_SAFE_ALLOC)
+   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DUSE_SAFE_ALLOC")
+endif(ENABLE_SAFE_ALLOC)
 
 find_package(BLAS REQUIRED)
 if(BLAS_FOUND)

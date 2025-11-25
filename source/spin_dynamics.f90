@@ -43,6 +43,10 @@ module spin_dynamics_mod
    use self_mod
    use timer_mod, only: g_timer
    use logger_mod, only: g_logger
+#ifdef USE_SAFE_ALLOC
+   use safe_alloc_mod, only: g_safe_alloc
+#endif
+
    implicit none
 
    private
@@ -232,7 +236,7 @@ contains
       call g_safe_alloc%allocate('spin_dynamics.emom', this%emom, (/3, this%lattice%nrec/))
       call g_safe_alloc%allocate('spin_dynamics.emom2', this%emom2, (/3, this%lattice%nrec/))
       call g_safe_alloc%allocate('spin_dynamics.emomM', this%emomM, (/3, this%lattice%nrec/))
-      call g_safe_alloc%allocate('spin_dynamics.mmom', this%emmom, (/this%lattice%nrec/))
+      call g_safe_alloc%allocate('spin_dynamics.mmom', this%mmom, (/this%lattice%nrec/))
 #else
       allocate (this%b_stochastic(3, this%lattice%nrec))
       allocate (this%beff(3, this%lattice%nrec))

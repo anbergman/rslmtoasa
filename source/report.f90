@@ -781,10 +781,11 @@ contains
                   if (this_copy%ncalls(labels(i)) == 1 .or. endswith(labels(i), '*')) then
                      call print_field('-')
                   else
-                     call print_field(this_copy%mean(labels(i)))
+                     call print_field(this_copy%mean(labels(i)), decimal=2)
                   end if
                case ('TOTAL')
-                  call print_field(this_copy%r_sum(labels(i)))
+                  call print_field(int(this_copy%r_sum(labels(i))))
+                  !call print_field(this_copy%r_sum(labels(i)), decimal=0)
                case ('TOTAL (%)')
                   call print_field(this_copy%sum_perc(labels(i), tottot=this_copy%r_sum(labels(1))), decimal=1)
                case ('NCALLS')

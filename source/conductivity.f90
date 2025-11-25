@@ -41,6 +41,10 @@ module conductivity_mod
    use self_mod
    use timer_mod, only: g_timer
    use logger_mod, only: g_logger
+#ifdef USE_SAFE_ALLOC
+   use safe_alloc_mod, only: g_safe_alloc
+#endif
+
    implicit none
 
    private
@@ -170,6 +174,7 @@ contains
       ! Initialize global variable
 #ifdef USE_SAFE_ALLOC
       call g_safe_alloc%allocate('recursion.gamma_nm', this%gamma_nm, (/this%en%channels_ldos + 10, &
+         this%lattice%control%cond_ll, this%lattice%control%cond_ll/))
 #else
       allocate (this%gamma_nm(this%en%channels_ldos + 10, this%lattice%control%cond_ll, this%lattice%control%cond_ll))
 #endif

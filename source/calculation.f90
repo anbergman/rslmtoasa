@@ -825,11 +825,15 @@ contains
 
       ! Constructing control object
       control_obj = control(this%fname)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Constructing lattice object
       lattice_obj = lattice(control_obj)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Running the pre-calculation
       call g_timer%start('pre-processing')
@@ -852,15 +856,21 @@ contains
       end select
       ! Creating the symbolic_atom object
       call lattice_obj%atomlist()
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Initializing MPI lookup tables and info.
       call get_mpi_variables(rank, lattice_obj%njij)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Constructing the charge object
       charge_obj = charge(lattice_obj)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       select case (control_obj%calctype)
       case ('B')
@@ -875,16 +885,22 @@ contains
 
       ! Constructing mixing object
       mix_obj = mix(lattice_obj, charge_obj)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Creating the energy object
       energy_obj = energy(lattice_obj)
       call energy_obj%e_mesh()
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Creating hamiltonian object
       hamiltonian_obj = hamiltonian(charge_obj)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
       select case (control_obj%calctype)
       case ('B')
          do i = 1, lattice_obj%nrec
@@ -909,23 +925,33 @@ contains
 
       ! Creating recursion object
       recursion_obj = recursion(hamiltonian_obj, energy_obj)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Creating density of states object
       dos_obj = dos(recursion_obj, energy_obj)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Creating Green function object
       green_obj = green(dos_obj)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Creating bands object
       bands_obj = bands(green_obj)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Creating the exchange object
       exchange_obj = exchange(bands_obj)
+#ifdef USE_MPI
       call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
 
       ! Calculating the orthogonal parameters
       do i = 1, lattice_obj%ntype
